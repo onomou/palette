@@ -20,6 +20,7 @@ config.read('config.ini')
 canvas = None
 
 app = dash.Dash(__name__)
+app.title = 'Palette - a GUI for Canvas' 
 app.layout = html.Div(children=[
     dcc.Store(id='user_api_store', storage_type='local'),
     html.H1(children='Canvas GUI -- in a browser!'),
@@ -34,14 +35,13 @@ app.layout = html.Div(children=[
                 children=[
                     html.P(id='api_url_connected'),
                     html.P(id='api_key_connected'),
-                    ]
+                ]
             )
         ]),
         
     ]),
     html.Button('Load Canvas',id='load_canvas_button'),
     html.Button('Clear Configuration',id='clear_config_button'),
-    html.P(id='canvas_status'),
 
     html.Label([
         dcc.Dropdown(id='courses_dropdown',placeholder='Select a course')
@@ -105,7 +105,6 @@ def clear_config(n_clicks):
 
 @app.callback(
     [Output('courses_dropdown', 'options'),
-     Output('canvas_status', 'children'),
      Output('user_api_store', 'data'),
      Output('api_url_connected', 'children'),
      Output('api_key_connected', 'children')],
@@ -130,12 +129,12 @@ def load_canvas(n_clicks, api_url, api_key, state_data):
         canvas.api_key = api_key
         canvas.courses = [x for x in canvas.get_courses()]
         canvas.courses_dict = {x.id: x for x in canvas.courses}
+        
         return (
             [{'label': x.name, 'value': x.id} for x in canvas.courses],
-            f'Connected to {canvas.api_url}',
             {'api_url': api_url, 'api_key': api_key},
-            f'Connected to <em>**{api_url}**</em>',
-            f'Your API key is {api_key}',
+            ['Connected to ',html.A(html.Strong(api_url),href=api_url,target='_blank')],
+            ['Your API key is ',html.Strong(api_key)],
         )
     except:
         return [], f'Error connecting to site! Check your internet connection and API URL/key.', None, 'None', 'None'
