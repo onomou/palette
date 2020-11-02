@@ -19,7 +19,8 @@ config.read('config.ini')
 
 canvas = None
 
-app = dash.Dash(__name__)
+server = flask.Flask(__name__)
+app = dash.Dash(__name__, server=server)
 app.title = 'Palette - a GUI for Canvas' 
 app.layout = html.Div(children=[
     dcc.Store(id='user_api_store', storage_type='local'),
