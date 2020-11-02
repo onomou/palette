@@ -3,6 +3,7 @@
 # Run this app with `python app.py` and
 # visit http://127.0.0.1:8050/ in your web browser.
 
+import flask
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
@@ -19,7 +20,8 @@ config.read('config.ini')
 
 canvas = None
 
-app = dash.Dash(__name__)
+server = flask.Flask(__name__)
+app = dash.Dash(__name__, server=server)
 app.title = 'Palette - a GUI for Canvas' 
 app.layout = html.Div(children=[
     dcc.Store(id='user_api_store', storage_type='local'),
