@@ -1,5 +1,5 @@
 # palette
-An alternate interface for Canvas from Instructure, intended to speed up a teacher's daily tasks, like creating and grading assignments
+An alternate interface for Canvas from Instructure, intended to speed up a teacher's daily tasks, like creating and grading assignments.
 
 ```shell
 git clone https://github.com/onomou/palette.git
