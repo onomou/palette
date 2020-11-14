@@ -10,7 +10,7 @@ from functools import lru_cache
 Cached functions
 '''
 
-@lru_cache
+@lru_cache(maxsize=1000)
 def get_canvas(api_url, api_key):
     # global canvas, config
     try:
@@ -25,7 +25,7 @@ def get_canvas(api_url, api_key):
     except:
         return None
 
-@lru_cache
+@lru_cache(maxsize=1000)
 def get_course(api_url, api_key, course_id):
     canvas = get_canvas(api_url, api_key)
     try:
