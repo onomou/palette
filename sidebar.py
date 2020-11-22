@@ -5,7 +5,8 @@ import dash_html_components as html
 from dash.dependencies import Input, Output, State, ALL
 from dash.exceptions import PreventUpdate
 from canvas_offline import *
-
+from dateutil.parser import parse
+from datetime import datetime
 
 '''
 Layout
@@ -16,10 +17,12 @@ SIDEBAR_STYLE = {
     "position": "fixed",
     "top": 0,
     "left": 0,
-    "bottom": "4rem",
+    "bottom": "3rem",
     "width": "12rem",
     "padding": "1rem 1rem",
-    "background-color": "#f8f9fa",
+    "background-color": "rgb(138, 188, 242)",
+    "border-right": "thin lightgrey solid",
+    "z-index":"10",
 }
 HEADER_STYLE = {
     "position": "fixed",
@@ -29,7 +32,8 @@ HEADER_STYLE = {
     "height": "4rem",
     "padding": "1rem 1rem",
     "background-color": "#f8f9fa",
-    "border-bottom": "1px solid rgba(0,0,0,.1)",
+    "border-right": "thin lightgrey solid",
+    "z-index":"10",
 }
 FOOTER_STYLE = {
     "position": "fixed",
@@ -41,6 +45,7 @@ FOOTER_STYLE = {
     "font-size": "small",
     "background-color": "#3b4045",
     "color": "white",
+    "z-index":"10",
 }
 
 header = html.Header(
@@ -56,8 +61,10 @@ header = html.Header(
                 dbc.NavLink("Assignment Groups", href="/assignment_groups", id="assignment_groups_link"),
                 dbc.NavLink("Modules", href="/modules", id="modules_link"),
                 dbc.NavLink("Users", href="/users", id="users_link"),
+                dbc.NavLink("Grades", href="/grades", id="grades_link"),
                 dbc.NavLink("Settings", href="/settings", id="settings_link"),
                 dbc.NavLink("Log", href="/log", id="log_link"),
+                dbc.NavLink("About", href="/about", id="about_link"),
             ],
             pills=True,
         ),
@@ -84,7 +91,19 @@ sidebar = html.Div(
             placeholder='Select a course',
             persistence=True,
             persistence_type='session',
+            optionHeight=45,
+            style={'font-size':'0.85em'}
         ),
+        dcc.RadioItems(
+            id='courses_filter',
+            options=[
+                {'label': 'All', 'value': 'all'},
+                {'label': 'Current', 'value': 'current'},
+                {'label': 'Concluded', 'value': 'concluded'},
+            ],
+            value='current',
+            labelStyle={'display': 'block'},
+        )
     ],
     style=SIDEBAR_STYLE,
 )
@@ -98,12 +117,20 @@ Callbacks
 @app.callback(
     [Output('courses_dropdown', 'options')],
     [Input('user_api_url', 'data'),
-     Input('user_api_key', 'data')]
+     Input('user_api_key', 'data'),
+     Input('courses_filter', 'value')]
 )
-def load_courses_list(api_url, api_key):
+def load_courses_list(api_url, api_key, filter):
     canvas = get_canvas(api_url, api_key)
     if canvas is not None:
-        return [{'label': x.name, 'value': x.id} for x in canvas.courses],
+        if filter == 'all':
+            courses = [x for x in canvas.courses]
+        elif filter == 'current':
+            courses = [x for x in canvas.courses if x.end_at is None or parse(x.end_at,ignoretz=True) > datetime.today()]
+        elif filter == 'concluded':
+            courses = [x for x in canvas.courses if x.end_at is not None and parse(x.end_at,ignoretz=True) < datetime.today()]
+        
+        return [{'label': x.course_code, 'value': x.id} for x in courses],
     else:
         raise PreventUpdate
 

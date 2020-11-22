@@ -22,25 +22,22 @@ CONTENT_STYLE = {
 
 from importlib import import_module
 
-page_names = {
+from sidebar import sidebar, header, footer
+pages_imports = {
     'assignments_page': 'assignments_page',
-    'sidebar': 'sidebar',
-    'header': 'sidebar',
-    'footer': 'sidebar',
     'settings_page': 'settings_page',
     'assignment_groups_page': 'assignment_groups_page',
     'modules_page': 'modules_page',
     'users_page': 'users_page',
+    'grades_page': 'grades_page',
     'log_page': 'log_page',
+    'about_page':'about_page',
 }
-
-for var, mod in page_names.items():
-    exec('from ' + mod +' import ' + var)
+for variable, module in pages_imports.items():
+   exec('from ' + module +' import ' + variable)
+page_names = {key[:-5]:eval(key) for key in pages_imports.keys()}
 
 content = html.Div(id="page-content", style=CONTENT_STYLE)
-
-url_and_sidebar = html.Div([dcc.Location(id="url"), sidebar])
-
 
 '''
 Main Layout
@@ -48,26 +45,25 @@ Main Layout
 app.title = 'Palette - a GUI for Canvas' 
 app.validation_layout = html.Div(
     children=[
-        header, footer, url_and_sidebar, content,
-    ] + [
-        assignments_page,
-        sidebar,
+        dcc.Location(id="url"),
         header,
         footer,
-        settings_page,
-        assignment_groups_page,
-        modules_page,
-        users_page,
-        log_page,
-    ] #+ [exec('x') for x in page_names]
+        sidebar,
+        content,
+    ] + [
+        list(page_names.values())
+        # eval(module) for module in pages_imports.keys()
+    ]
 )
 app.layout = html.Div(
     children = [
+        dcc.Location(id="url"),
         header,
         footer,
-        url_and_sidebar,
+        sidebar,
         content,
-    ]
+    ],
+    style={'max-width': '1000px',},
 )
 
 '''
@@ -115,19 +111,6 @@ def init_canvas(api_a, api_b):
             ['Something broke here... Error while connecting to Canvas'],
         )
 
-
-'''
-Callbacks
-'''
-
-page_names = {
-    'assignments':assignments_page,
-    'assignment_groups':assignment_groups_page,
-    'modules':modules_page,
-    'users':users_page,
-    'settings':settings_page,
-    'log':log_page,
-}
 # use the current pathname to set the active state of the
 # corresponding nav link to true so users to see which page they are on
 @app.callback(
@@ -137,7 +120,7 @@ page_names = {
 def toggle_active_links(pathname):
     if pathname == "/":
         # Treat page 1 as the homepage / index
-        return True, False, False
+        return [True] + [False for i in page_names.keys()][1:]
     return [pathname == f"/{i}" for i in page_names.keys()]
 
 @app.callback(Output("page-content", "children"), [Input("url", "pathname")])

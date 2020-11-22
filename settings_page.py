@@ -14,7 +14,7 @@ settings_page = html.Div(
     children=[
         dbc.FormGroup([
             dcc.Input(id='api_url_input', placeholder='Your API URL',type='text',size='30'),
-            dcc.Input(id='api_key_input', placeholder='Your API key',type='text',size='30'),
+            dcc.Input(id='api_key_input', placeholder='Your API key',type='password',size='30'),
         ]),
         dbc.Button('Load Canvas',id='load_canvas_button',color="primary"),
         dbc.Button('Clear Configuration',id='clear_config_button',color="secondary",outline=True),
